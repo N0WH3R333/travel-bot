@@ -37,3 +37,9 @@ bot_database.db
 # Файлы IDE
 .idea/
 .vscode/
+
+*.env.*
+secrets.py
+config.py
+config.json
+*.sqlite3
