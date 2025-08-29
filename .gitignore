@@ -25,3 +25,47 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Secrets
+.env
+*.env.*
+secrets.py
+config.py  # Если в нем есть секреты, как TOKEN
+
+# Database files
+*.sqlite3
+db.sqlite3

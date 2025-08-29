@@ -1,14 +1,43 @@
 import logging
 from telegram.ext import Application, CommandHandler, ChatMemberHandler, filters
+from telegram import BotCommand, BotCommandScopeChat
 
 # Импортируем все необходимые компоненты
 from config import TOKEN, SUPER_ADMIN_ID
 from services.database import init_db, get_all_admins
+from filters.custom_filters import is_admin  # <-- Импортируем наш новый динамический фильтр
 from handlers.start import start
 from handlers.admin import admin_handler
 from handlers.errors import error_handler
 from handlers.members import track_channel_members
 from handlers.admin_management import manage_admins_handler
+
+async def post_init(application: Application):
+    """Устанавливает команды для всех админов и супер-админа при запуске бота."""
+    logger = logging.getLogger(__name__)
+    logger.info("Установка команд для администраторов...")
+    
+    admin_commands = [BotCommand("admin", "Открыть панель администратора")]
+    # Предполагаем, что команда для управления админами - /manage_admins
+    super_admin_commands = admin_commands + [
+        BotCommand("manage_admins", "Управление администраторами"),
+    ]
+
+    # Установка команд для супер-админа
+    if SUPER_ADMIN_ID:
+        try:
+            await application.bot.set_my_commands(super_admin_commands, scope=BotCommandScopeChat(chat_id=SUPER_ADMIN_ID))
+            logger.info(f"Команды для супер-админа {SUPER_ADMIN_ID} установлены.")
+        except Exception as e:
+            logger.warning(f"Не удалось установить команды для супер-админа {SUPER_ADMIN_ID}: {e}")
+
+    # Установка команд для обычных админов из БД
+    for admin_id in get_all_admins():
+        if admin_id == SUPER_ADMIN_ID: continue # Не перезаписываем команды для супер-админа
+        try:
+            await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
+        except Exception as e:
+            logger.warning(f"Не удалось установить команды для админа {admin_id}: {e}")
 
 def main() -> None:
     """Запускает бота."""
@@ -22,25 +51,19 @@ def main() -> None:
     init_db()
 
     # Создание экземпляра бота
-    application = Application.builder().token(TOKEN).build()
+    # Добавляем post_init для установки команд при старте
+    application = Application.builder().token(TOKEN).post_init(post_init).build()
 
     # --- Регистрация обработчиков ---
     
     # Обработчик ошибок (важно регистрировать первым)
     application.add_error_handler(error_handler)
 
-    # Обработчик админ-панели
-    # Теперь он доступен и супер-админу, и админам из БД
-    all_admin_ids = get_all_admins()
-    if SUPER_ADMIN_ID:
-        all_admin_ids.append(SUPER_ADMIN_ID)
-    
-    # Создаем фильтр для всех администраторов
-    admin_user_filter = filters.User(user_id=set(all_admin_ids))
-
-    # Применяем фильтр к каждой точке входа в ConversationHandler
+    # Обработчик админ-панели с динамическим фильтром
+    # Применяем наш кастомный фильтр is_admin к каждой точке входа в ConversationHandler
     for entry_point in admin_handler.entry_points:
-        entry_point.filters = admin_user_filter & entry_point.filters if entry_point.filters else admin_user_filter
+        # Совмещаем наш фильтр is_admin с уже существующими фильтрами (например, filters.COMMAND)
+        entry_point.filters = is_admin & entry_point.filters if entry_point.filters else is_admin
     application.add_handler(admin_handler)
 
     # Обработчик команды /start
