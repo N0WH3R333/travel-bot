@@ -1,71 +1,39 @@
-# Файл: .gitignore
-
-# Игнорируем кэш Python
-__pycache__/
-*.pyc
-
-# Игнорируем виртуальные окружения
-venv/
-.venv/
-env/
-.env/
-
-# Игнорируем файлы IDE
-.idea/
-.vscode/
-
-# САМОЕ ВАЖНОЕ: Игнорируем файлы с секретными данными и базу данных
-.env
-bot_database.db
-*.sqlite3
-
-
 # Игнорируем кэш и скомпилированные файлы Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
 
 # C extensions
 *.so
 
-# Distribution / packaging
-.Python
+# Файлы сборки и дистрибуции
 build/
-develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 
-# Virtual environment
+# Виртуальные окружения
 venv/
 .venv/
 env/
 .env/
 
-# Secrets
+# Секретные данные
 .env
 *.env.*
 secrets.py
-config.py  # Если в нем есть секреты, как TOKEN
+config.py
 
-# Database files
+# Файлы баз данных
 *.sqlite3
 db.sqlite3
+bot_database.db
+
+# Файлы IDE
+.idea/
+.vscode/
