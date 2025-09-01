@@ -24,35 +24,30 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
     
     message = (
-        f"--- ERROR ---\n"
+        f"<b>An error occurred in the bot</b>\n\n"
+        f"<b>Error:</b>\n"
         f"<code>{html.escape(str(context.error))}</code>\n\n"
-        f"--- UPDATE ---\n"
+        f"<b>Update:</b>\n"
         f"<code>{html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}</code>\n\n"
-        f"--- CHAT DATA ---\n"
+        f"<b>Chat Data:</b>\n"
         f"<code>{html.escape(str(context.chat_data))}</code>\n\n"
-        f"--- USER DATA ---\n"
+        f"<b>User Data:</b>\n"
         f"<code>{html.escape(str(context.user_data))}</code>\n\n"
-        f"--- TRACEBACK ---\n"
+        f"<b>Traceback:</b>\n"
         f"<code>{html.escape(tb_string)}</code>"
     )
 
     # Получаем ID всех администраторов (супер-админ + админы из БД)
-    admin_ids = get_all_admins()
-    if SUPER_ADMIN_ID and SUPER_ADMIN_ID not in admin_ids:
-        admin_ids.append(SUPER_ADMIN_ID)
+    admin_ids = set(get_all_admins())
+    if SUPER_ADMIN_ID:
+        admin_ids.add(SUPER_ADMIN_ID)
 
     # Отправляем отформатированное сообщение об ошибке всем администраторам
     for admin_id in admin_ids:
         try:
-            # Разбиваем сообщение, если оно слишком длинное для Telegram
-            if len(message) > 4096:
-                for x in range(0, len(message), 4096):
-                    await context.bot.send_message(
-                        chat_id=admin_id, text=message[x:x+4096], parse_mode=ParseMode.HTML
-                    )
-            else:
+            for i in range(0, len(message), 4096):
                 await context.bot.send_message(
-                    chat_id=admin_id, text=message, parse_mode=ParseMode.HTML
+                    chat_id=admin_id, text=message[i:i + 4096], parse_mode=ParseMode.HTML
                 )
         except Exception as e:
             logger.error(f"Не удалось отправить сообщение об ошибке администратору {admin_id}: {e}")
