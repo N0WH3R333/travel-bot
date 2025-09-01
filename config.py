@@ -1,45 +1,18 @@
-# c:\Users\Lenovo\Desktop\bottravel\config.py
-
 import os
-import logging
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения из файла .env
 load_dotenv()
 
-def get_env_variable(var_name):
-    """Получает переменную из .env."""
-    value = os.getenv(var_name)
-    if not value:
-        logging.warning(f"Переменная {var_name} не найдена в .env.")
-    return value
+# Основные настройки бота
+TOKEN = os.getenv("TOKEN")
+SUPER_ADMIN_ID = int(os.getenv("SUPER_ADMIN_ID")) if os.getenv("SUPER_ADMIN_ID") else None
 
-def get_env_variable_int(var_name):
-    """Получает числовую переменную из .env."""
-    value = get_env_variable(var_name)
-    if value:
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            logging.warning(
-                f"Переменная {var_name} в .env имеет неверный формат."
-            )
-    return None
-
-# --- Основные настройки ---
-TOKEN = get_env_variable("TELEGRAM_BOT_TOKEN")
-# ID главного администратора, который может назначать других
-SUPER_ADMIN_ID = get_env_variable_int("SUPER_ADMIN_ID")
-
-# --- ID каналов для главного меню ---
-GROUP_ID_LIVE = get_env_variable_int("GROUP_ID_LIVE")
-GROUP_ID_BUY = get_env_variable_int("GROUP_ID_BUY")
-GROUP_ID_SELL = get_env_variable_int("GROUP_ID_SELL")
-
-# --- Конфигурация кнопок-ссылок для главного меню ---
-# Структура: (ID канала, Текст кнопки, Эмодзи)
+# --- Конфигурация кнопок-ссылок для стартового меню ---
+# Формат: (GROUP_ID_from_env, "Текст кнопки", "Эмодзи")
+# Бот должен быть администратором в этих каналах с правом приглашения пользователей.
 CHANNEL_BUTTONS_CONFIG = [
-    (GROUP_ID_LIVE, "Лайв канал", "🏎️"),
-    (GROUP_ID_BUY, "Забрать авто", "🔑"),
-    (GROUP_ID_SELL, "Продать / помощь в продаже", "💲"),
+    (os.getenv("GROUP_ID_REVIEWS"), "Отзывы", "🌟"),
+    (os.getenv("GROUP_ID_CHAT"), "Наш чат", "💬"),
+    (os.getenv("GROUP_ID_DETAILING"), "BT Detailing", "🚗"),
 ]
