@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Основные настройки бота
-TOKEN = os.getenv("BOT_TOKEN") # Убедись, что в .env файле переменная называется BOT_TOKEN
-SUPER_ADMIN_ID = int(os.getenv("SUPER_ADMIN_ID")) if os.getenv("SUPER_ADMIN_ID") else None
+TOKEN = os.getenv("BOT_TOKEN") 
+SUPER_ADMIN_ID = os.getenv("SUPER_ADMIN_ID")
 
 
 # Критически важная проверка: останавливаем бота, если токен не найден
@@ -23,6 +23,3 @@ CHANNEL_BUTTONS_CONFIG = [
     (os.getenv("GROUP_ID_SELL"), "Продажа/помощь в продаже", "🤝"),
     (os.getenv("GROUP_ID_DETAILING"), "BT Detailing Ставрополь", "🚗"),
 ]
-
-
-#ghghghgh
