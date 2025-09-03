@@ -27,7 +27,6 @@ env/
 .env
 *.env.*
 secrets.py
-config.py
 
 # Файлы баз данных
 *.sqlite3
