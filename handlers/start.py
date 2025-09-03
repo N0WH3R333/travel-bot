@@ -3,9 +3,13 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, constan
 from telegram.ext import ContextTypes
 from telegram.error import TelegramError
 from services.database import add_user
-from config import CHANNEL_BUTTONS_CONFIG
+from config import CHANNEL_BUTTONS_CONFIG, SUPER_ADMIN_ID
 
 logger = logging.getLogger(__name__)
+
+# Константы для callback_data, чтобы избежать опечаток
+CB_CALCULATOR = "calculator"
+CB_ADMIN_PANEL = "admin_panel"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Отправляет приветственное сообщение с кнопками-ссылками на каналы."""
@@ -38,16 +42,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 f"Убедитесь, что бот является администратором с правом приглашения. Ошибка: {e}"
             )
 
-    # Создаем клавиатуру, только если есть хотя бы одна кнопка
-    reply_markup = InlineKeyboardMarkup(url_buttons) if url_buttons else None
+    # --- Добавляем стандартные кнопки ---
+    action_buttons = [
+        [InlineKeyboardButton("🧮 Калькулятор", callback_data=CB_CALCULATOR)],
+    ]
+    # Показываем админ-панель только супер-администратору
+    if str(user.id) == str(SUPER_ADMIN_ID):
+        action_buttons.append([InlineKeyboardButton("👑 Админ-панель", callback_data=CB_ADMIN_PANEL)])
+
+    # Объединяем все кнопки: сначала ссылки на каналы, потом действия
+    full_keyboard = url_buttons + action_buttons
+    reply_markup = InlineKeyboardMarkup(full_keyboard) if full_keyboard else None
 
     welcome_text = (
         f"Привет, {user.mention_html()}!\n\n"
         "Добро пожаловать! Выберите интересующий вас раздел:"
     )
 
-    # Если кнопок нет, изменяем приветственный текст
-    if not url_buttons:
+    # Если по какой-то причине кнопок нет, показываем более простое сообщение
+    if not full_keyboard:
         welcome_text = (
             f"Привет, {user.mention_html()}!\n\n"
             "Добро пожаловать!"
