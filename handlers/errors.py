@@ -5,6 +5,7 @@ import traceback
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
+from telegram.error import TelegramError
 
 # Импортируем новую конфигурацию и функции для работы с БД
 from config import SUPER_ADMIN_ID
@@ -49,8 +50,8 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
                 await context.bot.send_message(
                     chat_id=admin_id, text=message[i:i + 4096], parse_mode=ParseMode.HTML
                 )
-        except Exception as e:
-            logger.error(f"Не удалось отправить сообщение об ошибке администратору {admin_id}: {e}")
+        except TelegramError as e:
+            logger.warning(f"Не удалось отправить сообщение об ошибке администратору {admin_id}: {e}")
 
     # Также отправляем пользователю-дружелюбное сообщение, если это возможно
     if isinstance(update, Update) and update.effective_chat:
@@ -59,5 +60,6 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
                 chat_id=update.effective_chat.id,
                 text="❗️ В боте произошла ошибка. Администраторы уже уведомлены."
             )
-        except Exception:
-            pass
+        except TelegramError as e:
+            # Логируем, если не удалось отправить сообщение пользователю (например, бот заблокирован)
+            logger.warning(f"Не удалось отправить сообщение об ошибке пользователю {update.effective_chat.id}: {e}")

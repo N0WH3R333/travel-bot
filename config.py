@@ -5,8 +5,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Основные настройки бота
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("BOT_TOKEN") # Убедись, что в .env файле переменная называется BOT_TOKEN
 SUPER_ADMIN_ID = int(os.getenv("SUPER_ADMIN_ID")) if os.getenv("SUPER_ADMIN_ID") else None
+
+
+# Критически важная проверка: останавливаем бота, если токен не найден
+if not TOKEN:
+    # Это сообщение будет видно в логах systemd или screen
+    raise ValueError("ОШИБКА: Токен бота не найден. Проверьте .env файл и имя переменной (должно быть BOT_TOKEN).")
 
 # --- Конфигурация кнопок-ссылок для стартового меню ---
 # Формат: (GROUP_ID_from_env, "Текст кнопки", "Эмодзи")

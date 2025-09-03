@@ -1,6 +1,7 @@
 import logging
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, constants
 from telegram.ext import ContextTypes
+from telegram.error import TelegramError
 from services.database import add_user
 from config import CHANNEL_BUTTONS_CONFIG
 
@@ -30,24 +31,30 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 logger.info(f"Создана и закэширована новая ссылка-приглашение для канала {group_id}.")
             
             url_buttons.append([InlineKeyboardButton(f"{emoji} {text}", url=url)])
-        except Exception as e:
+        except TelegramError as e:
             # Если бот не админ или нет прав, кнопка не будет добавлена, а в лог запишется ошибка
             logger.error(
                 f"Не удалось создать ссылку для канала {group_id}. "
                 f"Убедитесь, что бот является администратором с правом приглашения. Ошибка: {e}"
             )
-            pass
 
-    # Создаем клавиатуру только из кнопок-ссылок
-    reply_markup = InlineKeyboardMarkup(url_buttons)
+    # Создаем клавиатуру, только если есть хотя бы одна кнопка
+    reply_markup = InlineKeyboardMarkup(url_buttons) if url_buttons else None
 
     welcome_text = (
         f"Привет, {user.mention_html()}!\n\n"
         "Добро пожаловать! Выберите интересующий вас раздел:"
     )
 
+    # Если кнопок нет, изменяем приветственный текст
+    if not url_buttons:
+        welcome_text = (
+            f"Привет, {user.mention_html()}!\n\n"
+            "Добро пожаловать!"
+        )
+
     await update.message.reply_text(
         welcome_text,
         reply_markup=reply_markup,
-        parse_mode='HTML'
+        parse_mode=constants.ParseMode.HTML
     )
