@@ -23,3 +23,6 @@ CHANNEL_BUTTONS_CONFIG = [
     (os.getenv("GROUP_ID_SELL"), "Продажа/помощь в продаже", "🤝"),
     (os.getenv("GROUP_ID_DETAILING"), "BT Detailing Ставрополь", "🚗"),
 ]
+
+
+#ghghghgh
