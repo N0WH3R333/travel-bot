@@ -13,10 +13,25 @@ from handlers.members import track_channel_members
 from handlers.admin_management import manage_admins_handler
 
 async def post_init(application: Application):
-    """Устанавливает команды для всех админов и супер-админа при запуске бота."""
+    """
+    Выполняется один раз при запуске бота.
+    1. Очищает кэш ссылок-приглашений, чтобы подхватить изменения из .env.
+    2. Устанавливает команды для всех админов и супер-админа.
+    """
     logger = logging.getLogger(__name__)
-    logger.info("Установка команд для администраторов...")
+
+    # --- 1. Очистка кэша ссылок-приглашений ---
+    # Это гарантирует, что при каждом перезапуске бот будет создавать свежие
+    # ссылки на основе актуального .env файла, решая проблему "старых" ссылок.
+    logger.info("Очистка кэша ссылок-приглашений...")
+    # Ключами в кэше являются ID каналов (строки вида "-100...").
+    keys_to_clear = [key for key in application.bot_data if isinstance(key, str) and key.startswith('-100')]
+    for key in keys_to_clear:
+        del application.bot_data[key]
+    logger.info(f"Кэш ссылок очищен. Удалено ключей: {len(keys_to_clear)}.")
     
+    # --- 2. Установка команд ---
+    logger.info("Установка команд для администраторов...")
     admin_commands = [BotCommand("admin", "Открыть панель администратора")]
     # Предполагаем, что команда для управления админами - /manage_admins
     super_admin_commands = admin_commands + [
@@ -33,7 +48,8 @@ async def post_init(application: Application):
 
     # Установка команд для обычных админов из БД
     for admin_id in get_all_admins():
-        if admin_id == SUPER_ADMIN_ID: continue # Не перезаписываем команды для супер-админа
+        # Сравниваем как строки, чтобы избежать проблем с типами данных (int из БД и str из .env)
+        if str(admin_id) == str(SUPER_ADMIN_ID): continue # Не перезаписываем команды для супер-админа
         try:
             await application.bot.set_my_commands(admin_commands, scope=BotCommandScopeChat(chat_id=admin_id))
         except Exception as e:
